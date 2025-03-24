@@ -2,8 +2,9 @@
 
 set -e
 
-LOCAL=true
-if [[ LOCAL ]]; then
+LOCAL=false
+
+if $LOCAL; then
   SERVER_URL="https://localhost:9000"
 else
   SERVER_URL="https://10.1.6.16:8443"
@@ -52,10 +53,13 @@ check_certificate() {
 verify_server() {
   print_step "1" "Verifying server security (getting quote)"
 
-  if [[ LOCAL ]]; then
+  if $LOCAL; then
+    echo "local"
     quote_response=$(curl -s -X POST "$SERVER_URL/quote" -k)
   else
+    echo "remote"
     quote_response=$(curl -s -X POST "$SERVER_URL/quote" --cacert "$CERT_PATH")
+    echo "$quote_response"
   fi
 
   # Check if the response is valid JSON
@@ -94,7 +98,7 @@ select_file() {
 get_tools() {
   print_step "2" "Fetching available tools from server"
 
-  if [[ LOCAL ]]; then
+  if $LOCAL; then
     tools_response=$(curl -s -X POST "$SERVER_URL/tools" -k)
   else
     tools_response=$(curl -s -X POST "$SERVER_URL/tools" --cacert "$CERT_PATH")
@@ -212,8 +216,8 @@ EOF
 EOF
   fi
 
-  if [[ LOCAL ]]; then
-    upload_response=$(curl -X POST -H "Content-Type: application/json" \
+  if $LOCAL; then
+    upload_response=$(curl -s -X POST -H "Content-Type: application/json" \
       -d '{
       "toe": {
         "format": "string",
@@ -228,7 +232,7 @@ EOF
     }' \
       "$SERVER_URL/upload" -k)
   else
-    upload_response=$(curl -X POST -H "Content-Type: application/json" \
+    upload_response=$(curl -s -X POST -H "Content-Type: application/json" \
       -d '{
       "toe": {
         "format": "string",
@@ -289,7 +293,7 @@ EOF
 
   while ((poll_count < max_polls)); do
     # Get results
-    if [[ LOCAL ]]; then
+    if $LOCAL; then
       results_response=$(curl -s -X POST -H "Content-Type: application/json" \
         -d @"$temp_payload" "$SERVER_URL/result" -k)
     else
