@@ -71,7 +71,7 @@ verify_server() {
   # Check if the response is valid JSON
   if ! echo "$quote_response" | jq . &>/dev/null; then
     print_warning "Failed to get quoteor invalid response. Server may be down."
-    echo "Raw response: $tools_response"
+    echo "Raw response: $quote_response"
     exit 1
   fi
 
@@ -80,6 +80,17 @@ verify_server() {
 
   quote_encoded=$(./encodequote.py "$quote_data")
   print_info "Base64 encoded quote data from RTE:\n$quote_encoded"
+
+  read -p "Send quote to local verification service (requires local deployment of https://github.com/intel/SGX-TDX-DCAP-QuoteVerificationService)? (y/n): " automated_verification
+  if [[ "$automated_verification" == "y" || "$automated_verification" == "Y" ]]; then
+
+    verif_response=$(curl --insecure -s -X POST https://localhost:8799/attestation/sgx/dcap/v1/report -H "Content-Type: application/json" \
+      -d '{
+      "isvQuote": "'"$quote_encoded"'"
+      }')
+
+    print_info "Quote verification response:\n$verif_response"
+  fi
 
   read -p "Continue with this server? (y/n): " continue_verification
   if [[ "$continue_verification" != "y" && "$continue_verification" != "Y" ]]; then
