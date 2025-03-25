@@ -54,12 +54,9 @@ verify_server() {
   print_step "1" "Verifying server security (getting quote)"
 
   if $LOCAL; then
-    echo "local"
     quote_response=$(curl -s -X POST "$SERVER_URL/quote" -k)
   else
-    echo "remote"
     quote_response=$(curl -s -X POST "$SERVER_URL/quote" --cacert "$CERT_PATH")
-    echo "$quote_response"
   fi
 
   # Check if the response is valid JSON
@@ -70,7 +67,19 @@ verify_server() {
   fi
 
   print_info "Server quote received successfully"
-  echo "$quote_response" | jq .
+
+  # Check if the response is valid JSON
+  if ! echo "$quote_response" | jq . &>/dev/null; then
+    print_warning "Failed to get quoteor invalid response. Server may be down."
+    echo "Raw response: $tools_response"
+    exit 1
+  fi
+
+  # Extract quote
+  quote_data=$(echo "$quote_response" | jq -r '.quote_data')
+
+  quote_encoded=$(./encodequote.py "$quote_data")
+  print_info "Base64 encoded quote data from RTE:\n$quote_encoded"
 
   read -p "Continue with this server? (y/n): " continue_verification
   if [[ "$continue_verification" != "y" && "$continue_verification" != "Y" ]]; then
@@ -196,8 +205,6 @@ upload_file() {
 EOF
   else # binary
     TOE=$(base64 -w 0 "$FILE_PATH")
-    echo "HERE2message"
-    echo $encoded_file
 
     # Create payload for binary
     cat >"$temp_payload" <<EOF
