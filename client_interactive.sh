@@ -388,21 +388,31 @@ main() {
   # Get available tools
   get_tools || exit 1
 
-  # Select file for testing
-  while ! select_file; do
-    print_warning "Please select a valid file"
+  while true; do
+    # Select file for testing
+    while ! select_file; do
+      print_warning "Please select a valid file"
+    done
+
+    # Select tool for testing
+    while ! select_tool; do
+      print_warning "Please select a valid tool"
+    done
+
+    # Upload file and start analysis
+    upload_file || exit 1
+
+    # Poll for results
+    poll_results || exit 1
+
+    read -p "Evaluate another file? (y/n): " again
+    if [[ "$again" != "y" && "$continue_verification" != "Y" ]]; then
+      break
+      exit 0
+    fi
+    #reset chosen tool
+    TOOL_NAME=
   done
-
-  # Select tool for testing
-  while ! select_tool; do
-    print_warning "Please select a valid tool"
-  done
-
-  # Upload file and start analysis
-  upload_file || exit 1
-
-  # Poll for results
-  poll_results || exit 1
 
   print_info "All done!"
 }
