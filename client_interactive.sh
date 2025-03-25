@@ -285,6 +285,7 @@ EOF
   fi
 
   print_info "File uploaded successfully. Job ID: $JOB_ID"
+  read -p "Press Enter to start polling for results" </dev/tty
   return 0
 }
 
