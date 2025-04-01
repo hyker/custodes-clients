@@ -235,8 +235,7 @@ EOF
   fi
 
   if $LOCAL; then
-    upload_response=$(curl -s -X POST -H "Content-Type: application/json" \
-      -d '{
+    echo '{
       "toe": {
         "format": "string",
         "base64_encoded_toe": "'"$TOE"'"
@@ -247,11 +246,11 @@ EOF
           "parameters": null
         }
       ]
-    }' \
-      "$SERVER_URL/upload" -k)
+    }' >./up_payload.tmp
+    upload_response=$(curl -s -X POST -H "Content-Type: application/json" \
+      -d @up_payload.tmp "$SERVER_URL/upload" -k)j
   else
-    upload_response=$(curl -s -X POST -H "Content-Type: application/json" \
-      -d '{
+    echo '{
       "toe": {
         "format": "string",
         "base64_encoded_toe": "'"$TOE"'"
@@ -262,12 +261,15 @@ EOF
           "parameters": null
         }
       ]
-    }' \
+    }' >./up_payload.tmp
+    upload_response=$(curl -s -X POST -H "Content-Type: application/json" \
+      -d @up_payload.tmp \
       "$SERVER_URL/upload" --cacert "$CERT_PATH")
   fi
 
   # Clean up temp file
   rm "$temp_payload"
+  rm ./up_payload.tmp
 
   # Check if the response is valid JSON
   if ! echo "$upload_response" | jq . &>/dev/null; then
