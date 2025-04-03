@@ -78,8 +78,7 @@ verify_server() {
   # Extract quote
   quote_data=$(echo "$quote_response" | jq -r '.quote_data')
 
-  quote_encoded=$(./encodequote.py "$quote_data")
-  print_info "Base64 encoded quote data from RTE:\n$quote_encoded"
+  print_info "Base64 encoded quote data from RTE:\n$quote_data"
 
   read -p "Send quote to local verification service (requires local deployment of https://github.com/intel/SGX-TDX-DCAP-QuoteVerificationService)? (y/n): " automated_verification
   if [[ "$automated_verification" == "y" || "$automated_verification" == "Y" ]]; then
