@@ -3,6 +3,7 @@
 set -e
 
 LOCAL=false
+# LOCAL=true
 
 if $LOCAL; then
   SERVER_URL="https://localhost:9000"
@@ -12,6 +13,7 @@ fi
 
 CERT_PATH="cert_ca.pem"
 CONFIG_FILE="security_test_config.json"
+PUBLIC_KEY_FILE="key_rte_ssl_pub.pem"
 
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -54,7 +56,8 @@ verify_server() {
   print_step "1" "Verifying server security (getting quote)"
 
   if $LOCAL; then
-    quote_response=$(curl -s -X POST "$SERVER_URL/quote" -k)
+    # quote_response=$(curl -s -X POST "$SERVER_URL/quote" -k)
+    quote_response='{"quote_data": "LOCAL_DEBUG_NO_QUOTE"}'
   else
     quote_response=$(curl -s -X POST "$SERVER_URL/quote" --cacert "$CERT_PATH")
   fi
@@ -248,6 +251,9 @@ EOF
     }' >./up_payload.tmp
     upload_response=$(curl -s -X POST -H "Content-Type: application/json" \
       -d @up_payload.tmp "$SERVER_URL/upload" -k)
+    echo "Test1"
+    echo "$upload_response"
+    echo "Test2"
   else
     echo '{
       "toe": {
@@ -273,7 +279,9 @@ EOF
   # Check if the response is valid JSON
   if ! echo "$upload_response" | jq . &>/dev/null; then
     print_warning "Failed to upload file or invalid response."
+    echo "test1"
     echo "Raw response: $upload_response"
+    echo "test2"
     return 1
   fi
 
@@ -349,6 +357,38 @@ EOF
     echo -e "\n${GREEN}=== Analysis Results ===${NC}"
     if command -v jq &>/dev/null && echo "$results_response" | jq . &>/dev/null; then
       # It's valid JSON and jq is available
+
+      # extract signature
+      SIGNATURE_BASE64=$(echo "$results_response" | jq -r '.crypto_verification_data')
+
+      # extract message
+      message=$(echo "$results_response" | jq -c 'del(.crypto_verification_data)')
+
+      # Check if public key file exists
+      if [ ! -f "$PUBLIC_KEY_FILE" ]; then
+        echo "Error: Public key file not found: $PUBLIC_KEY_FILE"
+        exit 1
+      fi
+
+      # Create temporary files
+      TMP_DIR=$(mktemp -d)
+      SIGNATURE_FILE="$TMP_DIR/signature.bin"
+      MESSAGE_STRING_FILE="$TMP_DIR/message_string.txt"
+
+      # Decode the base64 signature and message
+      echo "$SIGNATURE_BASE64" | base64 -d >"$SIGNATURE_FILE"
+      echo -n "$message" | iconv -t utf-8 >"$MESSAGE_STRING_FILE"
+
+      signvalid=$(printf %s "$message" | openssl dgst -sha256 -verify "$PUBLIC_KEY_FILE" -signature "$SIGNATURE_FILE")
+      # echo "signvalid: $signvalid"
+      if [ "$signvalid" != "Verified OK" ]; then
+        echo "Signature verification failed!"
+        exit 1
+      fi
+
+      # Clean up
+      rm -rf "$TMP_DIR"
+
       echo "$results_response" | jq .
     else
       # Either it's not JSON or jq isn't available
