@@ -247,7 +247,7 @@ EOF
       ]
     }' >./up_payload.tmp
     upload_response=$(curl -s -X POST -H "Content-Type: application/json" \
-      -d @up_payload.tmp "$SERVER_URL/upload" -k)j
+      -d @up_payload.tmp "$SERVER_URL/upload" -k)
   else
     echo '{
       "toe": {
