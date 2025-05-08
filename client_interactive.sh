@@ -2,8 +2,8 @@
 
 set -e
 
-LOCAL=false
-# LOCAL=true
+#LOCAL=false
+LOCAL=true
 
 if $LOCAL; then
   SERVER_URL="https://localhost:9000"
@@ -208,12 +208,10 @@ upload_file() {
     "format": "string",
     "base64_encoded_toe": "$encoded_file"
   },
-  "test_suite": [
-    {
+  "test": {
       "tool_name": "$TOOL_NAME",
       "parameters": null
-    }
-  ]
+    } 
 }
 EOF
   else # binary

@@ -3,7 +3,7 @@
 read -p "input request identifyer:" ID
 
 curl -X POST -H "Content-Type: application/json" -d '{
-  "identifier" : "'"$ID"'"
+  "jobID" : "'"$ID"'"
 }' https://localhost:9000/result -k
 
 # "identifier":

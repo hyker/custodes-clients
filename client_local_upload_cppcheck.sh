@@ -7,10 +7,8 @@ curl -X POST -H "Content-Type: application/json" -d '{
     "format": "string",
     "base64_encoded_toe": "'"$TOE"'"
   },
-  "test_suite": [
-    {
+ "test": {
       "tool_name": "cppcheck",
       "parameters": null
-    }
-  ]
+  }
 }' https://localhost:9000/upload -k

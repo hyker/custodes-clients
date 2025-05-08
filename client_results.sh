@@ -3,7 +3,7 @@
 read -p "input request identifyer:" ID
 
 curl -X POST -H "Content-Type: application/json" -d '{
-  "identifier" : "'"$ID"'"
+  "jobID" : "'"$ID"'"
 }' https://10.1.6.16:8443/result --cacert cert_ca.pem
 
 # "identifier":
