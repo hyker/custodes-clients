@@ -9,6 +9,10 @@ curl -X POST -H "Content-Type: application/json" -d '{
   },
  "test": {
       "tool_name": "cppcheck",
-      "parameters": null
+      "parameters": [
+        {"param_name": "--enable",
+         "value": "warning"
+        }
+      ]
   }
 }' https://localhost:9000/upload -k
