@@ -10,7 +10,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
  "test": {
       "tool_name": "cppcheck",
       "parameters": [
-        {"param_name": "--enable",
+        {"param_name": "--enable=",
          "value": "warning"
         }
       ]
