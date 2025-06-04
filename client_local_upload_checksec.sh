@@ -11,7 +11,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
   "test": {
       "tool_name": "checksec",
       "parameters": [
-        {"param_name": "--verbose",
+        {"param_name": "--extended",
          "value": null
         }
       ]
