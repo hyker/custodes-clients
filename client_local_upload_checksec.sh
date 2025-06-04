@@ -10,6 +10,10 @@ curl -X POST -H "Content-Type: application/json" -d '{
   },
   "test": {
       "tool_name": "checksec",
-      "parameters": null
+      "parameters": [
+        {"param_name": "--verbose",
+         "value": null
+        }
+      ]
     }
 }' https://localhost:9000/upload -k
