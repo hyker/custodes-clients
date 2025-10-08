@@ -15,4 +15,4 @@ curl -X POST -H "Content-Type: application/json" -d '{
         }
       ]
   }
-}' https://localhost:9000/upload -k
+}' https://localhost:8443/upload -k
